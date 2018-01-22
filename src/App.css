@@ -1,0 +1,16 @@
+.inline-block {
+  display: inline-block
+}
+
+.add-event-form {
+  width: 20%;
+  vertical-align: top;
+}
+
+.add-event-form input, .add-event-form textarea {
+  width: 100%;
+}
+
+.add-event-map {
+  width: 80%;
+}
