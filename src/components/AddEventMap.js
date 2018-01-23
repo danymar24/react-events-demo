@@ -47,12 +47,17 @@ class AddEventMapComponent extends React.Component {
             }));
             
             const nextCenter = _.get(nextMarkers, '0.position', this.state.center);
-    
             this.setState({
                 center: nextCenter,
                 markers: nextMarkers,
             });
+
+            MapStore.selectedLocation = { lat: nextCenter.lat(), lng: nextCenter.lng() };
         };
+    }
+
+    markerDragged(e) {
+        MapStore.selectedLocation = { lat: e.latLng.lat(), lng: e.latLng.lng()};
     }
 
     render() {
@@ -82,7 +87,10 @@ class AddEventMapComponent extends React.Component {
                     }} />
                 </SearchBox>
                 {this.state.markers.map((marker, index) =>
-                    <Marker key={index} position={marker.position} />
+                    <Marker key={index} 
+                            position={marker.position} 
+                            draggable={true}
+                            onDragEnd={this.markerDragged}/>
                 )}
             </GoogleMap>
         )
