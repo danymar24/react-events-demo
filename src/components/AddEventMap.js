@@ -1,27 +1,34 @@
 import React from 'react';
-import { withScriptjs, withGoogleMap, GoogleMap, Marker } from 'react-google-maps';
+import { withScriptjs, withGoogleMap, GoogleMap } from 'react-google-maps';
 import _ from 'lodash';
 import { SearchBox } from 'react-google-maps/lib/components/places/SearchBox';
 import { store as MapStore } from '../stores/MapStore';
+import { MapMarker } from './MapMarker';
 
 class AddEventMapComponent extends React.Component {
 
-    componentWillMount() {
+    constructor(props) {
+        super(props);
+        this.state = {
+            bounds: null,
+            markers: [],
+        };
+    }
 
+    componentWillMount() {
+        
         navigator.geolocation.getCurrentPosition((position) => {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
+            const currentLocation = {
+                position: { lat, lng }
+            };
 
             this.setState({
-                center: { lat, lng }
+                center: currentLocation.position,
+                markers: [currentLocation]
             });
-            MapStore.selectedLocation = { lat, lng };
-        });
-
-        this.setState({
-            bounds: null,
-            markers: [],
-    
+            MapStore.selectedPlace.position = currentLocation.position;
         });
     
         this.onBoundsChanged = () => {
@@ -43,7 +50,9 @@ class AddEventMapComponent extends React.Component {
             });
 
             const nextMarkers = places.map(place => ({
+                placeInfo: place,
                 position: place.geometry.location,
+                open: false
             }));
             
             const nextCenter = _.get(nextMarkers, '0.position', this.state.center);
@@ -52,26 +61,40 @@ class AddEventMapComponent extends React.Component {
                 markers: nextMarkers,
             });
 
-            MapStore.selectedLocation = { lat: nextCenter.lat(), lng: nextCenter.lng() };
+            MapStore.selectedPlace.position = { lat: nextCenter.lat(), lng: nextCenter.lng() };
         };
+
+        this.locationClicked = (e) => {
+            MapStore.selectedPlace.position = { lat: e.latLng.lat(), lng: e.latLng.lng()};
+            console.log(e);
+            this.setState({
+                markers: [MapStore.selectedPlace]
+            });
+        }  
     }
 
-    markerDragged(e) {
-        MapStore.selectedLocation = { lat: e.latLng.lat(), lng: e.latLng.lng()};
+
+    renderMarkers() {
+        return this.state.markers.map((marker, index) => (
+                <MapMarker key={index}
+                        marker={marker} />
+            )
+        ) 
     }
 
     render() {
         return (
             <GoogleMap ref='map'
-                       defaultZoom={15}
+                       defaultZoom={14}
                        center={this.state.center}
-                       onBoundsChanged={this.onBoundsChanged} >
+                       onBoundsChanged={this.onBoundsChanged}
+                       onClick={this.locationClicked} >
                 <SearchBox ref='searchBox'
                            bounds={this.bounds}
                            controlPosition={window.google.maps.ControlPosition.TOP_LEFT}
                            onPlacesChanged={this.onPlacesChanged} >
                     <input type="text"
-                           placeholder="Customized your placeholder"
+                           placeholder="Search place"
                            style={{
                                 boxSizing: `border-box`,
                                 border: `1px solid transparent`,
@@ -86,12 +109,7 @@ class AddEventMapComponent extends React.Component {
                                 textOverflow: `ellipses`,
                     }} />
                 </SearchBox>
-                {this.state.markers.map((marker, index) =>
-                    <Marker key={index} 
-                            position={marker.position} 
-                            draggable={true}
-                            onDragEnd={this.markerDragged}/>
-                )}
+                { this.renderMarkers() }
             </GoogleMap>
         )
     }

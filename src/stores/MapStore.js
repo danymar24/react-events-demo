@@ -1,7 +1,8 @@
 import { observable } from 'mobx';
 
 class MapStore {
-    @observable selectedLocation = {};
+    @observable selectedPlace = {};
+    @observable markers = [];
 }
 
 const store = new MapStore;
