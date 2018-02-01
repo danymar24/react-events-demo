@@ -46,7 +46,7 @@ class AddEvent extends React.Component {
                 <div className='inline-block add-event-form'>
                     <form onSubmit={this.handleAddEvent.bind(this)}>
                         <input type='text' ref='name' placeholder='Name' />
-                        <input type='date' ref='date' placeholder='Date' />
+                        <input type='datetime-local' ref='date' placeholder='Date' />
                         <input type='text' ref='place' placeholder='Place' />
                         <input type='text' ref='address' placeholder='Address' />
                         <textarea ref='description' placeholder='Description' />
